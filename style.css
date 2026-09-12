@@ -1,0 +1,14 @@
+*{
+    padding: 0%;
+    margin: 0%;
+    box-sizing: border-box;
+}
+body{
+    background-color: #f4f6fb;
+  
+  /* padding-top: 66px; 56px (navbar) + 10px extra gap */
+}
+
+#navbar-container{
+    background-color: #f4f6fb !important;
+}

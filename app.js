@@ -133,62 +133,16 @@ logoutBtn &&
   logoutBtn.addEventListener("click", async (event) => {
     event.preventDefault();
 
-    // console.log("Logout button clicked");
+    const { error: logoutError } = await client.auth.signOut();
 
-    // const { error: logoutError } = await client.auth.signOut();
-    // console.log(logoutError);
-
-    // if (logoutError) {
-    //   Swal.fire(logoutError.message);
-    //   return;
-    // }
-
-    // Swal.fire("Logout successfully");
-
-
-    // // window.location.href = logoutBtn.href;
-    // window.location.href = "../index.html";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    logoutBtn &&
-  logoutBtn.addEventListener("click", async (event) => {
-    event.preventDefault();
-
-    console.log("Logout button clicked"); // check: ye print ho raha hai?
-
-    const result = await client.auth.signOut();
-    console.log("Signout result:", result); // pura object dekhein
-
-    const { error: logoutError } = result;
-
-    if (logoutError) {
-      console.log("Logout error:", logoutError.message);
-      Swal.fire(logoutError.message);
-      return;
-    }
+    console.log("Logout error:", logoutError);
+    Swal.fire("Something went wrong, please try again.");
 
     Swal.fire("Logout successfully");
-    // window.location.href = "../index.html";
-  });
+    window.location.href = "../index.html";
   });
 
-// POST ITEMS USER SIGNUP / USER PFP
+// POST ITEMS Btn :  USER SIGNUP / USER PFP
 const goToDashboard = document.querySelector("#goToDashboard");
 
 goToDashboard &&
@@ -199,7 +153,7 @@ goToDashboard &&
     } = await client.auth.getUser();
 
     if (!user || error) {
-      window.location.href = "../index.html";
+      window.location.href = "#";
     } else {
       window.location.href = "./pages/dashboard.html";
     }
@@ -215,7 +169,6 @@ const userJoinDate = document.querySelector("#userJoinDate");
 // start
 client.auth.onAuthStateChange((event, session) => {
   if (event === "INITIAL_SESSION") {
-
     if (!userPfp) return;
 
     if (session?.user) {
@@ -269,7 +222,8 @@ newPostForm &&
       .upload(`${Date.now()}_${imageFile.name}`, imageFile);
 
     if (uploadError) {
-      Swal.fire(uploadError.message);
+      console.log(uploadError);
+      Swal.fire("Something went wrong, please try again.");
       return;
     }
 
@@ -290,12 +244,15 @@ newPostForm &&
       });
 
     if (insertError) {
-      Swal.fire(insertError.message);
+      console.log(insertError);
+      Swal.fire("Something went wrong, please try again.");
       return;
     }
 
-    Swal.fire("Item posted successfully!");
-    newPostForm.reset();
+    Swal.fire("Item posted successfully!").then(() => {
+      newPostForm.reset();
+      window.location.reload();
+    });
   });
 
 // USER POSTS UI
@@ -314,14 +271,14 @@ async function loadPosts() {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.log(error);
+    console.log("loading posts:" + error);
   }
 
   postsContainer.innerHTML = "";
 
   items.forEach((item) => {
     postsContainer.innerHTML += `
-    <div class="card" style="width: 18rem;">
+    <div  class="card" style="width: 18rem;">
       <img class="card-img-top" src="${item.image_url}" alt="${item.title}" style="height: 200px; width=100% ; object-fit: cover;">
       <div class="card-body">
         <h5 class="card-title">${item.title}</h5>
@@ -360,3 +317,65 @@ postsContainer &&
   });
 
 loadPosts();
+
+// FEED PAGE
+const feedContainer = document.querySelector("#feedContainer");
+
+async function loadAllPosts() {
+  try {
+    const { data: items, error } = await client
+      .from("items")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.log("loading all user posts:" + error);
+    }
+
+    feedContainer.innerHTML = "";
+
+    items.forEach((item) => {
+      feedContainer.innerHTML += `
+    <div  class="card" style="width: 18rem;">
+      <img class="card-img-top" src="${item.image_url}" alt="${item.title}" style="height: 200px; width=100% ; object-fit: cover;">
+      <div class="card-body">
+        <h5 class="card-title">${item.title}</h5>
+        <p class="card-text">Rs. ${item.price}</p>
+        <p class="card-text">${item.description}</p>
+        <button class="dltBtn btn btn-danger" data-id="${item.id}">Delete</button>
+      </div>
+    </div>
+  `;
+    });
+  } catch (err) {
+    console.log("Unexpected error:", err);
+    Swal.fire("Something went wrong, please try again.");
+  }
+}
+feedContainer && loadAllPosts();
+
+
+// FEED PAGE NAVBAR 
+const loggedOutNavbar = document.querySelector("#loggedOutNavbar");
+const loggedInNavbar = document.querySelector("#loggedInNavbar");
+
+client.auth.onAuthStateChange((event, session) => {
+  try{
+    if (session?.user) {
+    // user login hai
+    loggedInNavbar.style.display = "block";
+    loggedOutNavbar.style.display = "none";
+  } else {
+    // user login nahi hai
+    loggedInNavbar.style.display = "none";
+    loggedOutNavbar.style.display = "block";
+  }
+  }catch(error){
+    console.log("navbar feed page" + error);
+    
+  }
+});
+
+
+// EDIT BUTTON 
+

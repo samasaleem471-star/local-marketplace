@@ -12,3 +12,10 @@ body{
 #navbar-container{
     background-color: #f4f6fb !important;
 }
+
+#postsContainer{
+    margin: 5%;
+}
+#feedContainer{
+    margin: 5%;
+}
